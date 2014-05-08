@@ -95,3 +95,5 @@ with open(OUTPUT_FILE,'w+') as f:
 				dilution = row[0].split(' ')[-1]
 				res = res*dilution
 				f.write(row[SAMPLE_NAME]+','+row[SAMPLE_ELEMENT]+','+row[SAMPLE_QTY]+','+res+','+row[SAMPLE_DATE]+'\n')
+				break
+
