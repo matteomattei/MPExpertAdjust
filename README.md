@@ -1,11 +1,11 @@
-AgilentAdjust
+MPExpertAdjust
 =============
 
-Tool to adjust values for Wizard software
+Tool to adjust values for MP Expert software
 
 ## Requirements ##
 
-*   Python 2.7 or Python 3.x
+*   Python 3.x
 
 ## Formula ##
 
