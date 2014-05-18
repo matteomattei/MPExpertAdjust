@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-import os, sys, csv
-import tkinter, tkinter.messagebox
+import os, sys, csv, time
 
-STANDARD_FILE='defstd.txt'
+path = os.path.dirname(os.path.abspath(sys.argv[0]))
+STANDARD_FILE=os.path.join(path,'defstd.csv')
 STANDARD_NAME=0
 STANDARD_ELEMENT=1
 STANDARD_QTY=2
@@ -12,8 +12,6 @@ SAMPLE_NAME=0
 SAMPLE_DATE=2
 SAMPLE_ELEMENT=4
 SAMPLE_QTY=9
-
-OUTPUT_FILE='output.csv'
 
 def is_standard(label, element, standards):
 	"""Check if a label is a standard"""
@@ -34,14 +32,19 @@ def written_lines_reversed(f):
 	res.reverse()
 	return res
 
+def print_error_and_exit(error):
+	"""Generate an error file and exit"""
+	path = os.path.dirname(os.path.abspath(sys.argv[0]))
+	filepath = os.path.join(path,'Error.txt')
+	date = time.strftime("%Y-%m-%d %H:%M:%S")
+	f = open(filepath,'a+')
+	f.write(date+' - Error: '+error+'\n')
+	f.close()
+	sys.exit(1)
 
 ### MAIN PROGRAM ###
-window = tkinter.Tk()
-window.wm_withdraw()
-
 if len(sys.argv) == 1:
-	tkinter.messagebox.showinfo(title="MPExpertAdjust Error", message='No input file supplied')
-	sys.exit(1)
+	print_error_and_exit('No input file supplied')
 
 # READ STANDARD FILE
 standards = []
@@ -53,8 +56,7 @@ try:
 		standards.append([elem.strip() for elem in i])
 	f.close()
 except:
-	tkinter.messagebox.showinfo(title="MPExpertAdjust Error", message='Malformed standard file '+STANDARD_FILE)
-	sys.exit(1)
+	print_error_and_exit('Malformed standard file '+STANDARD_FILE)
 
 # READ SAMPLE FILE
 SAMPLE_FILE=sys.argv[1]
@@ -67,7 +69,7 @@ try:
 		if line == '\n': continue
 		if line.startswith('Label,Type'): continue
 		if line[0] == '\x00': continue
-		if line[0] == '\ufeff': continue
+		if 'MP Expert worksheet exported' in line: continue
 		line_ar = line.split(',')
 		if len(line_ar)>=2 and (line_ar[1]=='STD' or line_ar[1]=='BLK'): continue
 		if len(line_ar)>21:
@@ -79,50 +81,38 @@ try:
 		samples.append([elem.strip() for elem in line_ar])
 	f.close()
 except:
-	tkinter.messagebox.showinfo(title="MPExpertAdjust Error", message='Malformed input file '+SAMPLE_FILE)
-	sys.exit(1)
+	print_error_and_exit('Malformed input file '+SAMPLE_FILE)
 
-# Make sure to create always a new file
-if os.path.exists(OUTPUT_FILE):
-	os.unlink(OUTPUT_FILE)
-
-break_flag = False
-with open(OUTPUT_FILE,'a+') as f:
+OUTPUT_FILE = os.path.join(path,'CALC_'+time.strftime("%Y%m%d_%H%M%S")+'_'+os.path.basename(SAMPLE_FILE))
+with open(OUTPUT_FILE,'a+') as OUTPUT:
 	standards_present=[]
 	for row in samples:
-		if break_flag==True: break
 		found = False
 		std = is_standard(row[SAMPLE_NAME],row[SAMPLE_ELEMENT],standards)
 		if std[0]==True:
-			f.write(row[SAMPLE_NAME]+','+row[SAMPLE_ELEMENT]+','+row[SAMPLE_QTY]+','+std[1]+','+row[SAMPLE_DATE]+'\n')
+			OUTPUT.write(row[SAMPLE_NAME]+','+row[SAMPLE_ELEMENT]+','+row[SAMPLE_QTY]+','+std[1]+','+row[SAMPLE_DATE]+'\n')
 			continue
-		out_rev = written_lines_reversed(f)
+		out_rev = written_lines_reversed(OUTPUT)
 		# now we reverse the already written output file and we parse it
 		# searching for the first standard with the current element
 		for line_string in out_rev:
-			if break_flag==True: break
 			line = [elem.strip() for elem in line_string.split(',')]
 			if row[SAMPLE_ELEMENT]==line[1] and is_standard(line[0],line[1],standards)[0]==True:
-				# standard found! Applying the forumula
+				# standard found! Applying the formula
 				res = (float(line[3])*float(row[SAMPLE_QTY]))/float(line[2])
 				diluition_factor = row[SAMPLE_NAME].split(' ')[-1]
 				if diluition_factor.isdigit()==False:
-					tkinter.messagebox.showinfo(title="MPExpertAdjust Error", message='Test "'+row[SAMPLE_NAME]+'" does not have a diluition factor')
-					break_flag=True
-					break
-				diluition = float(row[SAMPLE_NAME].split(' ')[-1])
-				res = res*diluition
-				f.write(row[SAMPLE_NAME]+','+row[SAMPLE_ELEMENT]+','+row[SAMPLE_QTY]+','+str(res)+','+row[SAMPLE_DATE]+'\n')
+					OUTPUT.close()
+					os.unlink(OUTPUT_FILE)
+					print_error_and_exit('Test "'+row[SAMPLE_NAME]+'" does not have a dilution factor')
+				dilution = float(row[SAMPLE_NAME].split(' ')[-1])
+				res = res * dilution
+				OUTPUT.write(row[SAMPLE_NAME]+','+row[SAMPLE_ELEMENT]+','+row[SAMPLE_QTY]+','+str(res)+','+row[SAMPLE_DATE]+'\n')
 				found = True
 				break
 		# if we are here it means that we didn't find the associated standard for the sample
-		# or the sample does not have a diluition set
-		if break_flag==True: break # we exit with error and we remove the output file
+		# or the sample does not have a dilution set
 		if found==False:
-			f.write(row[SAMPLE_NAME]+','+row[SAMPLE_ELEMENT]+','+row[SAMPLE_QTY]+',???????,'+row[SAMPLE_DATE]+'\n')
+			OUTPUT.write(row[SAMPLE_NAME]+','+row[SAMPLE_ELEMENT]+','+row[SAMPLE_QTY]+',???????,'+row[SAMPLE_DATE]+'\n')
 
-
-# remove the output file in case of error
-if break_flag==True:
-	os.unlink(OUTPUT_FILE)
 
