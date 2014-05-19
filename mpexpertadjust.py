@@ -66,7 +66,7 @@ try:
 	while True:
 		line = f.readline()
 		if line == '': break
-		if line == '\n': continue
+		if line.strip() == '': continue
 		if line.startswith('Label,Type'): continue
 		if line[0] == '\x00': continue
 		if 'MP Expert worksheet exported' in line: continue
