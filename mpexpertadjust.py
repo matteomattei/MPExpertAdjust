@@ -96,7 +96,7 @@ with open(OUTPUT_FILE,'a+') as OUTPUT:
 		# now we reverse the already written output file and we parse it
 		# searching for the first standard with the current element
 		for line_string in out_rev:
-			line = [elem.strip() for elem in line_string.split(',')]
+			line = [elem.strip() for elem in line_string.split(';')]
 			if row[SAMPLE_ELEMENT]==line[1] and is_standard(line[0],line[1],standards)[0]==True:
 				# standard found! Applying the formula
 				res = (float(line[3])*float(row[SAMPLE_QTY]))/float(line[2])
