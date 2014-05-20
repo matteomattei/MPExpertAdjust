@@ -90,7 +90,7 @@ with open(OUTPUT_FILE,'a+') as OUTPUT:
 		found = False
 		std = is_standard(row[SAMPLE_NAME],row[SAMPLE_ELEMENT],standards)
 		if std[0]==True:
-			OUTPUT.write(row[SAMPLE_NAME]+','+row[SAMPLE_ELEMENT]+','+row[SAMPLE_QTY]+','+std[1]+','+row[SAMPLE_DATE]+'\n')
+			OUTPUT.write(row[SAMPLE_NAME]+';'+row[SAMPLE_ELEMENT]+';'+row[SAMPLE_QTY]+';'+std[1]+';'+row[SAMPLE_DATE]+'\n')
 			continue
 		out_rev = written_lines_reversed(OUTPUT)
 		# now we reverse the already written output file and we parse it
@@ -107,12 +107,12 @@ with open(OUTPUT_FILE,'a+') as OUTPUT:
 					print_error_and_exit('Test "'+row[SAMPLE_NAME]+'" does not have a dilution factor')
 				dilution = float(row[SAMPLE_NAME].split(' ')[-1])
 				res = res * dilution
-				OUTPUT.write(row[SAMPLE_NAME]+','+row[SAMPLE_ELEMENT]+','+row[SAMPLE_QTY]+','+str(res)+','+row[SAMPLE_DATE]+'\n')
+				OUTPUT.write(row[SAMPLE_NAME]+';'+row[SAMPLE_ELEMENT]+';'+row[SAMPLE_QTY]+';'+str(res)+';'+row[SAMPLE_DATE]+'\n')
 				found = True
 				break
 		# if we are here it means that we didn't find the associated standard for the sample
 		# or the sample does not have a dilution set
 		if found==False:
-			OUTPUT.write(row[SAMPLE_NAME]+','+row[SAMPLE_ELEMENT]+','+row[SAMPLE_QTY]+',???????,'+row[SAMPLE_DATE]+'\n')
+			OUTPUT.write(row[SAMPLE_NAME]+';'+row[SAMPLE_ELEMENT]+';'+row[SAMPLE_QTY]+';???????;'+row[SAMPLE_DATE]+'\n')
 
 
