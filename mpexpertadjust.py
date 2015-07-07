@@ -66,10 +66,16 @@ try:
 	while True:
 		line = f.readline()
 		if line == '': break
+		# sanitization
 		if line.strip() == '': continue
+		if line.strip() == '""': continue
 		if line.startswith('Label,Type'): continue
+		if line.startswith('"Label","Type"'): continue
 		if line[0] == '\x00': continue
+		if line[0] == '\ufeff': continue
 		if 'MP Expert worksheet exported' in line: continue
+		if 'Worksheet exported from' in line: continue
+
 		line_ar = line.split(',')
 		if len(line_ar)>=2 and (line_ar[1]=='STD' or line_ar[1]=='BLK'): continue
 		if len(line_ar)>21:
@@ -78,7 +84,7 @@ try:
 			tmp_line.append(' '.join(line_ar[0:(len(line_ar)-21+1)]))
 			tmp_line += line_ar[24-21+1:]
 			line_ar = tmp_line
-		samples.append([elem.strip() for elem in line_ar])
+		samples.append([elem.strip().strip('"') for elem in line_ar])
 	f.close()
 except:
 	print_error_and_exit('Malformed input file '+SAMPLE_FILE)
