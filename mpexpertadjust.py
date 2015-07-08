@@ -105,7 +105,10 @@ with open(OUTPUT_FILE,'a+') as OUTPUT:
 			line = [elem.strip() for elem in line_string.split(';')]
 			if row[SAMPLE_ELEMENT]==line[1] and is_standard(line[0],line[1],standards)[0]==True:
 				# standard found! Applying the formula
-				res = (float(line[3])*float(row[SAMPLE_QTY]))/float(line[2])
+				if row[SAMPLE_QTY]=='-':
+					res = (float(line[3]))/float(line[2])
+				else:
+					res = (float(line[3])*float(row[SAMPLE_QTY]))/float(line[2])
 				diluition_factor = row[SAMPLE_NAME].split(' ')[-1]
 				if diluition_factor.isdigit()==False:
 					OUTPUT.close()
