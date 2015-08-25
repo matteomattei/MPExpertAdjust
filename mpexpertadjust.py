@@ -76,15 +76,9 @@ try:
 		if 'MP Expert worksheet exported' in line: continue
 		if 'Worksheet exported from' in line: continue
 
-		line_ar = line.split(',')
+		line_ar = [elem.strip().strip('"') for elem in line.split('","')]
 		if len(line_ar)>=2 and (line_ar[1]=='STD' or line_ar[1]=='BLK'): continue
-		if len(line_ar)>21:
-			# this means that there are some commas in the SAMPLE_NAME and we have to handle this case
-			tmp_line = []
-			tmp_line.append(' '.join(line_ar[0:(len(line_ar)-21+1)]))
-			tmp_line += line_ar[24-21+1:]
-			line_ar = tmp_line
-		samples.append([elem.strip().strip('"') for elem in line_ar])
+		samples.append(line_ar)
 	f.close()
 except:
 	print_error_and_exit('Malformed input file '+SAMPLE_FILE)
